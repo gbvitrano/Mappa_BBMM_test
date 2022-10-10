@@ -1,0 +1,1822 @@
+<!doctype html>
+<html lang="en">
+    <head>
+			        <link rel="shortcut icon" href="favicon.ico"/> 
+        <link rel="icon" href="favicon.png" type="image/png"/> 
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css"><link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css"><link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-search.css">
+        <link rel="stylesheet" href="css/filter.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
+        <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <style>
+ html, body, #map { width: 100%; height: 100%; padding: 0; margin: 0; background-color:#cdcdca; }	
+.legenda  {font-style: normal; font-weight:bold; font-size:16px; color: #4E4B4B; text-align: center !important;}
+.leg  {font-style: normal; font-weight:bold; font-size:12px; color: #4E4B4B; text-align: center !important;}
+ @media (min-width: 320px) and (max-width: 1024px) { .legenda {font-style: normal; font-weight:bold; font-size:8px; color: #4E4B4B; text-align: center !important; } }	
+hr {border: 0; background-color: #fff;  border-top: 1px dashed #cf0038; width:98%;}
+#beta { position:fixed; bottom:50px; left:60px; z-index: 1050;}
+#ods { position:fixed; bottom:2px; right:5%; z-index: 1020;}
+
+        </style>
+        <title>Ufficio Città Storica | U.O. Valorizzazione e Manutenzione BB.CC. ed Edifici Monumentali</title>
+
+    </head>
+    <body> 
+       <div id="map">
+	   <!-- loghi --> 
+<div id="ods"><a href="https://www.comune.palermo.it/settori.php?func=settore&sett=183" title="Comune di Palermo - Ufficio Città Storica" target="_blank"><img src="images/aqu.png" width="45" title="Comune di Palermo - Ufficio Città Storica" alt="Ufficio Città Storica"></a></div>  	   
+<!-- beta version       -->
+ <div id="beta"><img src="images/beta.png" width="80" title="beta version" alt="beta version"></a></div>
+        </div>
+
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script><script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="js/leaflet-search.js"></script>
+        <script src="js/tailDT.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
+        <script src="data/confine_pa_2.js"></script>
+        <script src="data/BeniMonumentali_gbBase_Dati_3.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString') {
+              highlightLayer.setStyle({
+                color: '#ffff00',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: '#ffff00',
+                fillOpacity: 1
+              });
+            }
+        }
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:19, minZoom:11
+        }).fitBounds([[38.04991369999999,13.201537264491005],[38.22458660000003,13.520959470237665]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_OSMStandard_0');
+        map.getPane('pane_OSMStandard_0').style.zIndex = 400;
+        var layer_OSMStandard_0 = L.tileLayer('http://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            pane: 'pane_OSMStandard_0',
+            opacity: 1.0,
+            attribution: '<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors, CC-BY-SA</a>',
+            minZoom: 11,
+            maxZoom: 19,
+            minNativeZoom: 0,
+            maxNativeZoom: 19
+        });
+        layer_OSMStandard_0;
+        map.createPane('pane_GoogleSatellite_1');
+        map.getPane('pane_GoogleSatellite_1').style.zIndex = 401;
+        var layer_GoogleSatellite_1 = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleSatellite_1',
+            opacity: 1.0,
+            attribution: '<a href="https://www.google.at/permissions/geoguidelines/attr-guide.html">Map data ©2015 Google</a>',
+            minZoom: 11,
+            maxZoom: 19,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_GoogleSatellite_1;
+        map.addLayer(layer_GoogleSatellite_1);
+        function pop_confine_pa_2(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (i in e.target._eventParents) {
+                        e.target._eventParents[i].resetStyle(e.target);
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['osm_id'] !== null ? autolinker.link(feature.properties['osm_id'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['class'] !== null ? autolinker.link(feature.properties['class'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['type'] !== null ? autolinker.link(feature.properties['type'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name'] !== null ? autolinker.link(feature.properties['name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['address'] !== null ? autolinker.link(feature.properties['address'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['extratags'] !== null ? autolinker.link(feature.properties['extratags'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_confine_pa_2_0() {
+            return {
+                pane: 'pane_confine_pa_2',
+                opacity: 1,
+                color: 'rgba(217,18,18,1.0)',
+                dashArray: '10,5',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 0,
+                interactive: false,
+            }
+        }
+        map.createPane('pane_confine_pa_2');
+        map.getPane('pane_confine_pa_2').style.zIndex = 402;
+        map.getPane('pane_confine_pa_2').style['mix-blend-mode'] = 'normal';
+        var layer_confine_pa_2 = new L.geoJson(json_confine_pa_2, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_confine_pa_2',
+            layerName: 'layer_confine_pa_2',
+            pane: 'pane_confine_pa_2',
+            onEachFeature: pop_confine_pa_2,
+            style: style_confine_pa_2_0,
+        });
+        bounds_group.addLayer(layer_confine_pa_2);
+        map.addLayer(layer_confine_pa_2);
+		
+        function pop_BeniMonumentali_gbBase_Dati_3(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (i in e.target._eventParents) {
+                        e.target._eventParents[i].resetStyle(e.target);
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+					<th scope="row">ID:</th>\
+                        <td colspan="2">' + (feature.properties['ID'] !== null ? autolinker.link(feature.properties['ID'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+					                    <tr>\
+                        <th scope="row">Nome:</th>\
+                        <td>' + (feature.properties['Nome'] !== null ? autolinker.link(feature.properties['Nome'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+					                    <tr>\
+                        <th scope="row">Tipologia:</th>\
+                        <td>' + (feature.properties['Tipologia'] !== null ? autolinker.link(feature.properties['Tipologia'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Unità di primo livello:</th>\
+                        <td>' + (feature.properties['UPL_nome'] !== null ? autolinker.link(feature.properties['UPL_nome'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Quartiere:</th>\
+                        <td>' + (feature.properties['Quartiere'] !== null ? autolinker.link(feature.properties['Quartiere'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Circoscrizione:</th>\
+                        <td>' + (feature.properties['Circoscrizione'] !== null ? autolinker.link(feature.properties['Circoscrizione'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Ubicazione:</th>\
+                        <td>' + (feature.properties['Ubicazione'] !== null ? autolinker.link(feature.properties['Ubicazione'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                        <th scope="row">Foglio:</th>\
+                        <td>' + (feature.properties['Foglio'] !== null ? autolinker.link(feature.properties['Foglio'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                        <th scope="row">Particella:</th>\
+                        <td>' + (feature.properties['Particella'] !== null ? autolinker.link(feature.properties['Particella'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+					 <th scope="row">Google Maps:</th>\
+                        <td colspan="2">' + (feature.properties['googlemaps'] !== null ? autolinker.link(feature.properties['googlemaps'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                         <th scope="row">Mobile:</th>\
+						<td colspan="2">' + (feature.properties['geouri'] !== null ? autolinker.link(feature.properties['geouri'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+        function style_BeniMonumentali_gbBase_Dati_3_0(feature) {
+            switch(String(feature.properties['Tipologia'])) {
+                case 'Archeologia Industriale':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(99,229,97,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Area archeologica':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(211,37,130,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Area di proprietà Comunale':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(215,89,144,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Asilo':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(179,238,111,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Baglio':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(221,154,83,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Biblioteca':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(136,224,171,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Capannoni':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(231,236,139,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Caserma':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(234,47,26,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chiesa':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(198,216,97,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chiosco':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(216,69,162,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cimitero':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(230,76,109,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cippo':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(153,227,14,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'CIT':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(118,214,187,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Colleggio':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(204,129,219,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Convento':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(216,42,190,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Dammuso':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(44,233,239,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Dormitorio pubblico':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(211,117,186,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Edificio':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(77,208,12,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Edilizia Residenziale':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(151,220,132,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ex Convento':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(225,213,52,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Fontana':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(129,221,186,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Fontanella in ghisa':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(101,41,232,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Giardino':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(240,207,43,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Giardino pubblico':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(63,144,210,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Grotta':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(209,136,118,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Immobile':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(122,166,223,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Istituto':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(216,18,206,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Lapide':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(80,125,215,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Lavatoio':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(63,17,229,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Magazzino':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(228,117,234,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Mercato':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(161,53,223,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Monastero':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(225,112,59,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Monumento':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(111,12,203,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Mura civiche':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(22,200,114,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Mura Civiche':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(51,240,227,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Museo':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(240,169,55,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Obelisco':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(119,210,128,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Oratorio':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(72,179,236,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Padiglione':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(110,123,224,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Palazzo':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(69,186,225,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Palchetto della Musica':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(218,166,21,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Parco':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(230,128,140,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Piazza':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(161,37,206,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Piloni ingresso':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(50,214,187,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Porta':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(106,107,209,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Pozzo':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(176,136,231,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Scuola':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(226,132,132,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Serra':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(116,211,44,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Statua':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(47,205,78,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Teatro':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(23,65,203,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Torre':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(182,229,40,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Torre piezometrica':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(143,236,171,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Uffici':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(77,63,203,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Vespasiano':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(44,185,210,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Villa':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(201,91,13,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Villa storica':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(239,111,151,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'NULL':
+                    return {
+                pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(56,203,37,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_BeniMonumentali_gbBase_Dati_3');
+        map.getPane('pane_BeniMonumentali_gbBase_Dati_3').style.zIndex = 403;
+        map.getPane('pane_BeniMonumentali_gbBase_Dati_3').style['mix-blend-mode'] = 'normal';
+        var layer_BeniMonumentali_gbBase_Dati_3 = new L.geoJson(json_BeniMonumentali_gbBase_Dati_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_BeniMonumentali_gbBase_Dati_3',
+            layerName: 'layer_BeniMonumentali_gbBase_Dati_3',
+            pane: 'pane_BeniMonumentali_gbBase_Dati_3',
+            onEachFeature: pop_BeniMonumentali_gbBase_Dati_3,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_BeniMonumentali_gbBase_Dati_3_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_BeniMonumentali_gbBase_Dati_3);
+        map.addLayer(layer_BeniMonumentali_gbBase_Dati_3);
+        var osmGeocoder = new L.Control.Geocoder({
+            collapsed: true,
+            position: 'topleft',
+            text: 'Search',
+            title: 'Testing'
+        }).addTo(map);
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .className += ' fa fa-search';
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .title += 'Search for a place';
+        var baseMaps = {};
+        L.control.layers(baseMaps, {'<div class="legenda"><img src="images/aqu.png" width="45" height="45" /><br>Comune di Palermo<br> Ufficio Città Storica</div><hr><div class="leg">U.O. Valorizzazione e Manutenzione BB.CC.<br>ed Edifici Monumentali</div> <br>' :layer_confine_pa_2, '<img src="legend/confine_pa_2.png" /> confine_pa': layer_confine_pa_2, "Google Satellite": layer_GoogleSatellite_1, "OSM Standard": layer_OSMStandard_0, 'Beni Monumentali _ gb - Base_Dati<br /><table><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_ArcheologiaIndustriale0.png" /></td><td>Archeologia Industriale</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Areaarcheologica1.png" /></td><td>Area archeologica</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_AreadiproprietàComunale2.png" /></td><td>Area di proprietà Comunale</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Asilo3.png" /></td><td>Asilo</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Baglio4.png" /></td><td>Baglio</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Biblioteca5.png" /></td><td>Biblioteca</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Capannoni6.png" /></td><td>Capannoni</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Caserma7.png" /></td><td>Caserma</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Chiesa8.png" /></td><td>Chiesa</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Chiosco9.png" /></td><td>Chiosco</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Cimitero10.png" /></td><td>Cimitero</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Cippo11.png" /></td><td>Cippo</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_CIT12.png" /></td><td>CIT</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Colleggio13.png" /></td><td>Colleggio</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Convento14.png" /></td><td>Convento</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Dammuso15.png" /></td><td>Dammuso</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Dormitoriopubblico16.png" /></td><td>Dormitorio pubblico</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Edificio17.png" /></td><td>Edificio</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_EdiliziaResidenziale18.png" /></td><td>Edilizia Residenziale</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_ExConvento19.png" /></td><td>Ex Convento</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Fontana20.png" /></td><td>Fontana</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Fontanellainghisa21.png" /></td><td>Fontanella in ghisa</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Giardino22.png" /></td><td>Giardino</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Giardinopubblico23.png" /></td><td>Giardino pubblico</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Grotta24.png" /></td><td>Grotta</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Immobile25.png" /></td><td>Immobile</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Istituto26.png" /></td><td>Istituto</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Lapide27.png" /></td><td>Lapide</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Lavatoio28.png" /></td><td>Lavatoio</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Magazzino29.png" /></td><td>Magazzino</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Mercato30.png" /></td><td>Mercato</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Monastero31.png" /></td><td>Monastero</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Monumento32.png" /></td><td>Monumento</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Muraciviche33.png" /></td><td>Mura civiche</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_MuraCiviche34.png" /></td><td>Mura Civiche</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Museo35.png" /></td><td>Museo</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Obelisco36.png" /></td><td>Obelisco</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Oratorio37.png" /></td><td>Oratorio</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Padiglione38.png" /></td><td>Padiglione</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Palazzo39.png" /></td><td>Palazzo</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_PalchettodellaMusica40.png" /></td><td>Palchetto della Musica</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Parco41.png" /></td><td>Parco</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Piazza42.png" /></td><td>Piazza</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Piloniingresso43.png" /></td><td>Piloni ingresso</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Porta44.png" /></td><td>Porta</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Pozzo45.png" /></td><td>Pozzo</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Scuola46.png" /></td><td>Scuola</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Serra47.png" /></td><td>Serra</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Statua48.png" /></td><td>Statua</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Teatro49.png" /></td><td>Teatro</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Torre50.png" /></td><td>Torre</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Torrepiezometrica51.png" /></td><td>Torre piezometrica</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Uffici52.png" /></td><td>Uffici</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Vespasiano53.png" /></td><td>Vespasiano</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Villa54.png" /></td><td>Villa</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_Villastorica55.png" /></td><td>Villa storica</td></tr><tr><td style="text-align: center;"><img src="legend/BeniMonumentali_gbBase_Dati_3_56.png" /></td><td></td></tr></table>': layer_BeniMonumentali_gbBase_Dati_3, },{collapsed:true}).addTo(map);
+        setBounds();
+        map.addControl(new L.Control.Search({
+            layer: layer_BeniMonumentali_gbBase_Dati_3,
+            initial: false,
+            hideMarkerOnCollapse: true,
+            propertyName: 'Tipologia'}));
+        document.getElementsByClassName('search-button')[0].className +=
+         ' fa fa-binoculars';
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "100%";
+        col1.style.width = "88%";
+        col1.style.display = "inline-block";
+        var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+        var Filters = {"Nome": "str","UPL_nome": "str","Quartiere": "str","Circoscrizione": "str","Tipologia": "str"};
+        function filterFunc() {
+          map.eachLayer(function(lyr){
+          if ("options" in lyr && "dataVar" in lyr["options"]){
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try{
+              for (key in Filters){
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
+                if (Filters[key] == "str" || Filters[key] == "bool"){
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options
+                  for (var i=0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                    try{
+                      if (key in features[0].properties){
+                        for (i = features.length - 1;
+                          i >= 0; --i){
+                          if (selection.indexOf(
+                          features[i].properties[key])<0
+                          && selection.length>0) {
+                          features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                  }
+                }
+                if (Filters[key] == "int"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (parseInt(features[i].properties[key])
+                          < sliderVals[0]
+                          || parseInt(features[i].properties[key])
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "real"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (features[i].properties[key]
+                          < sliderVals[0]
+                          || features[i].properties[key]
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "date"
+                  || Filters[key] == "datetime"
+                  || Filters[key] == "time"){
+                  try{
+                    if (key in features[0].properties){
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
+                      startdate = document.getElementById("dat_" +
+                        HTMLkey + "_date1").value.replace(" ", "T");
+                      enddate = document.getElementById("dat_" +
+                        HTMLkey + "_date2").value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i){
+                        if (features[i].properties[key] < startdate
+                          || features[i].properties[key] > enddate){
+                          features.splice(i,1);
+                        }
+                      }
+                    }
+                  } catch(err){
+                  }
+                }
+              }
+            } catch(err){
+            }
+          this[lyr["options"]["layerName"]].clearLayers();
+          this[lyr["options"]["layerName"]].addData(features);
+          }
+          })
+        }
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+				
+			 var div_Tipologia = document.createElement('div');
+            div_Tipologia.id = "div_Tipologia";
+            div_Tipologia.className= "filterselect";
+            document.getElementById("menu").appendChild(div_Tipologia);
+            sel_Tipologia = document.createElement('select');
+            sel_Tipologia.multiple = true;
+            sel_Tipologia.size = 8;
+            sel_Tipologia.id = "sel_Tipologia";
+            var Tipologia_options_str = "<option value='' unselected></option>";
+            sel_Tipologia.onchange = function(){filterFunc()};
+            Tipologia_options_str  += '<option value="NULL">NULL</option>';
+            Tipologia_options_str  += '<option value="Archeologia Industriale">Archeologia Industriale</option>';
+            Tipologia_options_str  += '<option value="Area archeologica">Area archeologica</option>';
+            Tipologia_options_str  += '<option value="Area di proprietà Comunale">Area di proprietà Comunale</option>';
+            Tipologia_options_str  += '<option value="Asilo">Asilo</option>';
+            Tipologia_options_str  += '<option value="Baglio">Baglio</option>';
+            Tipologia_options_str  += '<option value="Biblioteca">Biblioteca</option>';
+            Tipologia_options_str  += '<option value="CIT">CIT</option>';
+            Tipologia_options_str  += '<option value="Capannoni">Capannoni</option>';
+            Tipologia_options_str  += '<option value="Caserma">Caserma</option>';
+            Tipologia_options_str  += '<option value="Chiesa">Chiesa</option>';
+            Tipologia_options_str  += '<option value="Chiosco">Chiosco</option>';
+            Tipologia_options_str  += '<option value="Cimitero">Cimitero</option>';
+            Tipologia_options_str  += '<option value="Cippo">Cippo</option>';
+            Tipologia_options_str  += '<option value="Colleggio">Colleggio</option>';
+            Tipologia_options_str  += '<option value="Convento">Convento</option>';
+            Tipologia_options_str  += '<option value="Dammuso">Dammuso</option>';
+            Tipologia_options_str  += '<option value="Dormitorio pubblico">Dormitorio pubblico</option>';
+            Tipologia_options_str  += '<option value="Edificio">Edificio</option>';
+            Tipologia_options_str  += '<option value="Edilizia Residenziale">Edilizia Residenziale</option>';
+            Tipologia_options_str  += '<option value="Ex Convento">Ex Convento</option>';
+            Tipologia_options_str  += '<option value="Fontana">Fontana</option>';
+            Tipologia_options_str  += '<option value="Fontanella in ghisa">Fontanella in ghisa</option>';
+            Tipologia_options_str  += '<option value="Giardino">Giardino</option>';
+            Tipologia_options_str  += '<option value="Giardino pubblico">Giardino pubblico</option>';
+            Tipologia_options_str  += '<option value="Grotta">Grotta</option>';
+            Tipologia_options_str  += '<option value="Immobile">Immobile</option>';
+            Tipologia_options_str  += '<option value="Istituto">Istituto</option>';
+            Tipologia_options_str  += '<option value="Lapide">Lapide</option>';
+            Tipologia_options_str  += '<option value="Lavatoio">Lavatoio</option>';
+            Tipologia_options_str  += '<option value="Magazzino">Magazzino</option>';
+            Tipologia_options_str  += '<option value="Mercato">Mercato</option>';
+            Tipologia_options_str  += '<option value="Monastero">Monastero</option>';
+            Tipologia_options_str  += '<option value="Monumento">Monumento</option>';
+            Tipologia_options_str  += '<option value="Mura Civiche">Mura Civiche</option>';
+            Tipologia_options_str  += '<option value="Mura civiche">Mura civiche</option>';
+            Tipologia_options_str  += '<option value="Museo">Museo</option>';
+            Tipologia_options_str  += '<option value="Obelisco">Obelisco</option>';
+            Tipologia_options_str  += '<option value="Oratorio">Oratorio</option>';
+            Tipologia_options_str  += '<option value="Padiglione">Padiglione</option>';
+            Tipologia_options_str  += '<option value="Palazzo">Palazzo</option>';
+            Tipologia_options_str  += '<option value="Palchetto della Musica">Palchetto della Musica</option>';
+            Tipologia_options_str  += '<option value="Parco">Parco</option>';
+            Tipologia_options_str  += '<option value="Piazza">Piazza</option>';
+            Tipologia_options_str  += '<option value="Piloni ingresso">Piloni ingresso</option>';
+            Tipologia_options_str  += '<option value="Porta">Porta</option>';
+            Tipologia_options_str  += '<option value="Pozzo">Pozzo</option>';
+            Tipologia_options_str  += '<option value="Scuola">Scuola</option>';
+            Tipologia_options_str  += '<option value="Serra">Serra</option>';
+            Tipologia_options_str  += '<option value="Statua">Statua</option>';
+            Tipologia_options_str  += '<option value="Teatro">Teatro</option>';
+            Tipologia_options_str  += '<option value="Torre">Torre</option>';
+            Tipologia_options_str  += '<option value="Torre piezometrica">Torre piezometrica</option>';
+            Tipologia_options_str  += '<option value="Uffici">Uffici</option>';
+            Tipologia_options_str  += '<option value="Vespasiano">Vespasiano</option>';
+            Tipologia_options_str  += '<option value="Villa">Villa</option>';
+            Tipologia_options_str  += '<option value="Villa storica">Villa storica</option>';
+            sel_Tipologia.innerHTML = Tipologia_options_str;
+            div_Tipologia.appendChild(sel_Tipologia);
+            var lab_Tipologia = document.createElement('div');
+            lab_Tipologia.innerHTML = 'Tipologia';
+            lab_Tipologia.className = 'filterlabel';
+            div_Tipologia.appendChild(lab_Tipologia);
+            var reset_Tipologia = document.createElement('div');
+            reset_Tipologia.innerHTML = 'Cancella filtro';
+            reset_Tipologia.className = 'filterlabel';
+            reset_Tipologia.onclick = function() {
+                var options = document.getElementById("sel_Tipologia").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            }; 
+            div_Tipologia.appendChild(reset_Tipologia);	
+				
+            var div_Nome = document.createElement('div');
+            div_Nome.id = "div_Nome";
+            div_Nome.className= "filterselect";
+            document.getElementById("menu").appendChild(div_Nome);
+            sel_Nome = document.createElement('select');
+            sel_Nome.multiple = true;
+            sel_Nome.size = 6;
+            sel_Nome.id = "sel_Nome";
+            var Nome_options_str = "<option value='' unselected></option>";
+            sel_Nome.onchange = function(){filterFunc()};
+            Nome_options_str  += '<option value="Antica Torre dell&apos;acqua">Antica Torre dell&apos;acqua</option>';
+            Nome_options_str  += '<option value="Archivio Storico Comunale">Archivio Storico Comunale</option>';
+            Nome_options_str  += '<option value="Archivio via Nassaiuoli">Archivio via Nassaiuoli</option>';
+            Nome_options_str  += '<option value="Arco della Zisa">Arco della Zisa</option>';
+            Nome_options_str  += '<option value="Area archeologica">Area archeologica</option>';
+            Nome_options_str  += '<option value="Asilo Rurale Principe Umberto">Asilo Rurale Principe Umberto</option>';
+            Nome_options_str  += '<option value="Ass. Fiocco Verde">Ass. Fiocco Verde</option>';
+            Nome_options_str  += '<option value="Averna Spazio Open | ex Spazio incolto">Averna Spazio Open | ex Spazio incolto</option>';
+            Nome_options_str  += '<option value="Baglio San Gabriele">Baglio San Gabriele</option>';
+            Nome_options_str  += '<option value="Baglio Scorzadenaro">Baglio Scorzadenaro</option>';
+            Nome_options_str  += '<option value="Bastione dello Spasimo">Bastione dello Spasimo</option>';
+            Nome_options_str  += '<option value="Biblioteca Comunale">Biblioteca Comunale</option>';
+            Nome_options_str  += '<option value="Biblioteca dei Ragazzi Largo Scalilla">Biblioteca dei Ragazzi Largo Scalilla</option>';
+            Nome_options_str  += '<option value="CIT  Bellini ( EX Casa Comunale )">CIT  Bellini ( EX Casa Comunale )</option>';
+            Nome_options_str  += '<option value="CRE.ZI. PLUS">CRE.ZI. PLUS</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Bibl Ist. Gramsci-Sala Blu Cobalto-Grande Vasca">Cantieri Culturali alla Zisa | Bibl Ist. Gramsci-Sala Blu Cobalto-Grande Vasca</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Botteghe - cinema De Seta - Ideas Box -  Ass. Lumpen - Teatro Ditirammu - Conumità Ellenica Ass. Mazzoleni">Cantieri Culturali alla Zisa | Botteghe - cinema De Seta - Ideas Box -  Ass. Lumpen - Teatro Ditirammu - Conumità Ellenica Ass. Mazzoleni</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Centro Culturale Francese - Centro Culturale Tedesco Goethe Institut">Cantieri Culturali alla Zisa | Centro Culturale Francese - Centro Culturale Tedesco Goethe Institut</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Cinema De Seta">Cantieri Culturali alla Zisa | Cinema De Seta</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Circolo Arci Tavola Tonda">Cantieri Culturali alla Zisa | Circolo Arci Tavola Tonda</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Galleria Bianca">Cantieri Culturali alla Zisa | Galleria Bianca</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Green Lab">Cantieri Culturali alla Zisa | Green Lab</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Museo Internazionale della Fotografia">Cantieri Culturali alla Zisa | Museo Internazionale della Fotografia</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Padiglione 1 - biblioteca">Cantieri Culturali alla Zisa | Padiglione 1 - biblioteca</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Padiglione 2">Cantieri Culturali alla Zisa | Padiglione 2</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Padiglione 8 - 9">Cantieri Culturali alla Zisa | Padiglione 8 - 9</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Padiglione Portineria e Punto informazione">Cantieri Culturali alla Zisa | Padiglione Portineria e Punto informazione</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Padiglione Tre Navate">Cantieri Culturali alla Zisa | Padiglione Tre Navate</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Sala Perriera">Cantieri Culturali alla Zisa | Sala Perriera</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Scuola del Cinema">Cantieri Culturali alla Zisa | Scuola del Cinema</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Spazio Ducrot">Cantieri Culturali alla Zisa | Spazio Ducrot</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Spazio Franco">Cantieri Culturali alla Zisa | Spazio Franco</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Spazio Marceau">Cantieri Culturali alla Zisa | Spazio Marceau</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Spazio Nuovo">Cantieri Culturali alla Zisa | Spazio Nuovo</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Spazio Officina">Cantieri Culturali alla Zisa | Spazio Officina</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Spazio Zero">Cantieri Culturali alla Zisa | Spazio Zero</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | Uffici Ass. Cultura - Centro Culturale Skené">Cantieri Culturali alla Zisa | Uffici Ass. Cultura - Centro Culturale Skené</option>';
+            Nome_options_str  += '<option value="Cantieri Culturali alla Zisa | ZAC - Museo Euromediterraneo">Cantieri Culturali alla Zisa | ZAC - Museo Euromediterraneo</option>';
+            Nome_options_str  += '<option value="Casa Natura">Casa Natura</option>';
+            Nome_options_str  += '<option value="Casa del custode">Casa del custode</option>';
+            Nome_options_str  += '<option value="Casena di Villa Trabia">Casena di Villa Trabia</option>';
+            Nome_options_str  += '<option value="Caserma Vigili del Fuoco (A. Pollaci 1935-37)">Caserma Vigili del Fuoco (A. Pollaci 1935-37)</option>';
+            Nome_options_str  += '<option value="Centro Al Kalisa">Centro Al Kalisa</option>';
+            Nome_options_str  += '<option value="Chalet | Giardino Garibaldi">Chalet | Giardino Garibaldi</option>';
+            Nome_options_str  += '<option value="Chiesa Madonna dell&apos;Oreto">Chiesa Madonna dell&apos;Oreto</option>';
+            Nome_options_str  += '<option value="Chiesa dell&apos;ex Convento dello Schiavuzzo">Chiesa dell&apos;ex Convento dello Schiavuzzo</option>';
+            Nome_options_str  += '<option value="Chimica Arenella">Chimica Arenella</option>';
+            Nome_options_str  += '<option value="Chiosco">Chiosco</option>';
+            Nome_options_str  += '<option value="Chiosco Giovanni Amato">Chiosco Giovanni Amato</option>';
+            Nome_options_str  += '<option value="Chiosco Liberty Ribaudo">Chiosco Liberty Ribaudo</option>';
+            Nome_options_str  += '<option value="Chiosco Montalbano">Chiosco Montalbano</option>';
+            Nome_options_str  += '<option value="Chiosco Ribaudo (1894 - Ernesto Basile)">Chiosco Ribaudo (1894 - Ernesto Basile)</option>';
+            Nome_options_str  += '<option value="Chiosco Vicari  (E. Basile 1897)">Chiosco Vicari  (E. Basile 1897)</option>';
+            Nome_options_str  += '<option value="Chiosco all&apos; interno di villa Bonanno">Chiosco all&apos; interno di villa Bonanno</option>';
+            Nome_options_str  += '<option value="Chiosco nei pressi Quattro Canti">Chiosco nei pressi Quattro Canti</option>';
+            Nome_options_str  += '<option value="Cimitero Cappuccini">Cimitero Cappuccini</option>';
+            Nome_options_str  += '<option value="Cimitero degli Inglesi">Cimitero degli Inglesi</option>';
+            Nome_options_str  += '<option value="Cimitero di Santa Maria di Gesù">Cimitero di Santa Maria di Gesù</option>';
+            Nome_options_str  += '<option value="Cippo commemorativo ai Decollati">Cippo commemorativo ai Decollati</option>';
+            Nome_options_str  += '<option value="Città dei Ragazzi">Città dei Ragazzi</option>';
+            Nome_options_str  += '<option value="Coffee house di Villa Giulia">Coffee house di Villa Giulia</option>';
+            Nome_options_str  += '<option value="Collegio San Rocco">Collegio San Rocco</option>';
+            Nome_options_str  += '<option value="Colonia Comunale  parco della Favorita">Colonia Comunale  parco della Favorita</option>';
+            Nome_options_str  += '<option value="Colonna dell&apos;Immacolata">Colonna dell&apos;Immacolata</option>';
+            Nome_options_str  += '<option value="Complesso dell&apos; Origlione">Complesso dell&apos; Origlione</option>';
+            Nome_options_str  += '<option value="Complesso dello Spasimo">Complesso dello Spasimo</option>';
+            Nome_options_str  += '<option value="Convento Filippone">Convento Filippone</option>';
+            Nome_options_str  += '<option value="Convento dello Spirito Santo (ex caserma Falletta)">Convento dello Spirito Santo (ex caserma Falletta)</option>';
+            Nome_options_str  += '<option value="Convento di Santa Caterina">Convento di Santa Caterina</option>';
+            Nome_options_str  += '<option value="Convento di Santa Caterina  (di Via Garibaldi )">Convento di Santa Caterina  (di Via Garibaldi )</option>';
+            Nome_options_str  += '<option value="Convento di Santa Maria di Gesù">Convento di Santa Maria di Gesù</option>';
+            Nome_options_str  += '<option value="CreZi. Plus">CreZi. Plus</option>';
+            Nome_options_str  += '<option value="Dammusi della Zisa">Dammusi della Zisa</option>';
+            Nome_options_str  += '<option value="Ecomuseo Mare Memoria Viva">Ecomuseo Mare Memoria Viva</option>';
+            Nome_options_str  += '<option value="Edificio presso l&apos;ingresso della Favorita (Leoni)">Edificio presso l&apos;ingresso della Favorita (Leoni)</option>';
+            Nome_options_str  += '<option value="Edificio residenziale">Edificio residenziale</option>';
+            Nome_options_str  += '<option value="Epigrafe Marmorea">Epigrafe Marmorea</option>';
+            Nome_options_str  += '<option value="Ex Collegio di Santa Maria della Sapienza">Ex Collegio di Santa Maria della Sapienza</option>';
+            Nome_options_str  += '<option value="Ex Educandato Whitaker">Ex Educandato Whitaker</option>';
+            Nome_options_str  += '<option value="Ex Lavatoio Comunale Via Germanese">Ex Lavatoio Comunale Via Germanese</option>';
+            Nome_options_str  += '<option value="Ex lavatoio comunale, via Canonico Carella">Ex lavatoio comunale, via Canonico Carella</option>';
+            Nome_options_str  += '<option value="Fontana Garraffello">Fontana Garraffello</option>';
+            Nome_options_str  += '<option value="Fontana Pretoria">Fontana Pretoria</option>';
+            Nome_options_str  += '<option value="Fontana dei due Draghi">Fontana dei due Draghi</option>';
+            Nome_options_str  += '<option value="Fontana del Garraffello">Fontana del Garraffello</option>';
+            Nome_options_str  += '<option value="Fontana del Genio di Palermo">Fontana del Genio di Palermo</option>';
+            Nome_options_str  += '<option value="Fontana del Pescatore">Fontana del Pescatore</option>';
+            Nome_options_str  += '<option value="Fontana della  villetta di Piazza P. Micca">Fontana della  villetta di Piazza P. Micca</option>';
+            Nome_options_str  += '<option value="Fontana della Ninfa">Fontana della Ninfa</option>';
+            Nome_options_str  += '<option value="Fontana di Piazza Caracciolo">Fontana di Piazza Caracciolo</option>';
+            Nome_options_str  += '<option value="Fontane parietali">Fontane parietali</option>';
+            Nome_options_str  += '<option value="Giardino Garibaldi">Giardino Garibaldi</option>';
+            Nome_options_str  += '<option value="Giardino Vincenzo Florio, Case Rocca">Giardino Vincenzo Florio, Case Rocca</option>';
+            Nome_options_str  += '<option value="Grotta dei Beati Paoli">Grotta dei Beati Paoli</option>';
+            Nome_options_str  += '<option value="Gruppo scultoreo di Vittorio Gentili">Gruppo scultoreo di Vittorio Gentili</option>';
+            Nome_options_str  += '<option value="Ingressi Favorita">Ingressi Favorita</option>';
+            Nome_options_str  += '<option value="Ist. Compr. Madre Teresa di Calcutta ( EX Scuola Daita )">Ist. Compr. Madre Teresa di Calcutta ( EX Scuola Daita )</option>';
+            Nome_options_str  += '<option value="La casa di Muhil">La casa di Muhil</option>';
+            Nome_options_str  += '<option value="Lavatoio Comunale">Lavatoio Comunale</option>';
+            Nome_options_str  += '<option value="Lavatoio Comunale Via Conte Federico">Lavatoio Comunale Via Conte Federico</option>';
+            Nome_options_str  += '<option value="Ludoteca | Giardino Garibaldi">Ludoteca | Giardino Garibaldi</option>';
+            Nome_options_str  += '<option value="Magazino">Magazino</option>';
+            Nome_options_str  += '<option value="Mercato Ittico e sottostante chiesa">Mercato Ittico e sottostante chiesa</option>';
+            Nome_options_str  += '<option value="Mercato Ortofrutticolo di Palermo">Mercato Ortofrutticolo di Palermo</option>';
+            Nome_options_str  += '<option value="Monastero delle Carmelitane Scalze  Centro Sant&apos;Anna ( Artigianelle )">Monastero delle Carmelitane Scalze  Centro Sant&apos;Anna ( Artigianelle )</option>';
+            Nome_options_str  += '<option value="Monumento Filippo V">Monumento Filippo V</option>';
+            Nome_options_str  += '<option value="Monumento a Carlo Cottone">Monumento a Carlo Cottone</option>';
+            Nome_options_str  += '<option value="Monumento a Francesco Crispi">Monumento a Francesco Crispi</option>';
+            Nome_options_str  += '<option value="Monumento a Ruggero Settimo">Monumento a Ruggero Settimo</option>';
+            Nome_options_str  += '<option value="Monumento ai Caduti per la libertà">Monumento ai Caduti per la libertà</option>';
+            Nome_options_str  += '<option value="Monumento dedicato a Ignazio Florio">Monumento dedicato a Ignazio Florio</option>';
+            Nome_options_str  += '<option value="Mura - Bastione della Balata">Mura - Bastione della Balata</option>';
+            Nome_options_str  += '<option value="Mura Civiche Palazzo Reale">Mura Civiche Palazzo Reale</option>';
+            Nome_options_str  += '<option value="Mura Montalto">Mura Montalto</option>';
+            Nome_options_str  += '<option value="Mura delle Cattive">Mura delle Cattive</option>';
+            Nome_options_str  += '<option value="Mura di San Vito">Mura di San Vito</option>';
+            Nome_options_str  += '<option value="Muro Accademia di Belle Arti al Capo">Muro Accademia di Belle Arti al Capo</option>';
+            Nome_options_str  += '<option value="Muro Favorita in via del Fante">Muro Favorita in via del Fante</option>';
+            Nome_options_str  += '<option value="Muro via Marchese Ugo">Muro via Marchese Ugo</option>';
+            Nome_options_str  += '<option value="Muro viale Duca degli Abruzzi">Muro viale Duca degli Abruzzi</option>';
+            Nome_options_str  += '<option value="Museo Pitrè">Museo Pitrè</option>';
+            Nome_options_str  += '<option value="Museo della scuola">Museo della scuola</option>';
+            Nome_options_str  += '<option value="Noviziato dei Crociferi - Città Storica">Noviziato dei Crociferi - Città Storica</option>';
+            Nome_options_str  += '<option value="Nuovo Palazzo di Giustizia">Nuovo Palazzo di Giustizia</option>';
+            Nome_options_str  += '<option value="Obelisco Grifeo">Obelisco Grifeo</option>';
+            Nome_options_str  += '<option value="Oratorio Santa Chiara">Oratorio Santa Chiara</option>';
+            Nome_options_str  += '<option value="Palazzo   Niscemi ex Palazzo Statella di Spaccaforno">Palazzo   Niscemi ex Palazzo Statella di Spaccaforno</option>';
+            Nome_options_str  += '<option value="Palazzo Burgio di Villafiorita e Aragona">Palazzo Burgio di Villafiorita e Aragona</option>';
+            Nome_options_str  += '<option value="Palazzo Capaci Pilo di Cefalà">Palazzo Capaci Pilo di Cefalà</option>';
+            Nome_options_str  += '<option value="Palazzo Cusenza - Marchesi">Palazzo Cusenza - Marchesi</option>';
+            Nome_options_str  += '<option value="Palazzo Fiore">Palazzo Fiore</option>';
+            Nome_options_str  += '<option value="Palazzo Galletti di San Cataldo">Palazzo Galletti di San Cataldo</option>';
+            Nome_options_str  += '<option value="Palazzo Giallongo di Fiumetorto">Palazzo Giallongo di Fiumetorto</option>';
+            Nome_options_str  += '<option value="Palazzo Giusino/Romeo di Magnisi | Assessorato Attivita Sociali">Palazzo Giusino/Romeo di Magnisi | Assessorato Attivita Sociali</option>';
+            Nome_options_str  += '<option value="Palazzo Gulì / Palazzo Finocchiaro">Palazzo Gulì / Palazzo Finocchiaro</option>';
+            Nome_options_str  += '<option value="Palazzo La Rosa - Caffarelli - Gambacorta">Palazzo La Rosa - Caffarelli - Gambacorta</option>';
+            Nome_options_str  += '<option value="Palazzo Monumentale  P.zza Giulio Cesare lato mare">Palazzo Monumentale  P.zza Giulio Cesare lato mare</option>';
+            Nome_options_str  += '<option value="Palazzo Monumentale  P.zza Giulio Cesare lato monte">Palazzo Monumentale  P.zza Giulio Cesare lato monte</option>';
+            Nome_options_str  += '<option value="Palazzo Palagonia">Palazzo Palagonia</option>';
+            Nome_options_str  += '<option value="Palazzo Rostagno">Palazzo Rostagno</option>';
+            Nome_options_str  += '<option value="Palazzo Sammartino">Palazzo Sammartino</option>';
+            Nome_options_str  += '<option value="Palazzo Tarallo / Hotel Centrale Palace">Palazzo Tarallo / Hotel Centrale Palace</option>';
+            Nome_options_str  += '<option value="Palazzo Tommaso Natale">Palazzo Tommaso Natale</option>';
+            Nome_options_str  += '<option value="Palazzo Ziino">Palazzo Ziino</option>';
+            Nome_options_str  += '<option value="Palazzo della Ragioneria">Palazzo della Ragioneria</option>';
+            Nome_options_str  += '<option value="Palazzo delle Aquile">Palazzo delle Aquile</option>';
+            Nome_options_str  += '<option value="Palchetto della Musica">Palchetto della Musica</option>';
+            Nome_options_str  += '<option value="Palchetto della Musica Giuni Russo">Palchetto della Musica Giuni Russo</option>';
+            Nome_options_str  += '<option value="Parco della Favorita">Parco della Favorita</option>';
+            Nome_options_str  += '<option value="Piazza Borsa - Piazza Cassa di Risparmio">Piazza Borsa - Piazza Cassa di Risparmio</option>';
+            Nome_options_str  += '<option value="Piazza Magione - Area Archeologica - Palazzina Giovanni Falcone">Piazza Magione - Area Archeologica - Palazzina Giovanni Falcone</option>';
+            Nome_options_str  += '<option value="Piazza Ponte Ammiraglio  immobile c/so dei Mille 271-281">Piazza Ponte Ammiraglio  immobile c/so dei Mille 271-281</option>';
+            Nome_options_str  += '<option value="Piazza Villena | Quattro Canti">Piazza Villena | Quattro Canti</option>';
+            Nome_options_str  += '<option value="Piazza dei Quartieri, 6 (U.I.L.D.M.)">Piazza dei Quartieri, 6 (U.I.L.D.M.)</option>';
+            Nome_options_str  += '<option value="Pilone Est di porta Vicari">Pilone Est di porta Vicari</option>';
+            Nome_options_str  += '<option value="Pilone Porta Vicari">Pilone Porta Vicari</option>';
+            Nome_options_str  += '<option value="Piloni di ingresso Reale della Favorita">Piloni di ingresso Reale della Favorita</option>';
+            Nome_options_str  += '<option value="Porta Felice Pilone Nord">Porta Felice Pilone Nord</option>';
+            Nome_options_str  += '<option value="Porta Felice Pilone Sud">Porta Felice Pilone Sud</option>';
+            Nome_options_str  += '<option value="Porta Nuova">Porta Nuova</option>';
+            Nome_options_str  += '<option value="Porta Reale o Carolina">Porta Reale o Carolina</option>';
+            Nome_options_str  += '<option value="Porta Santa Agata">Porta Santa Agata</option>';
+            Nome_options_str  += '<option value="Portas dei Greci">Portas dei Greci</option>';
+            Nome_options_str  += '<option value="Postazione Decentrata piazza Marina">Postazione Decentrata piazza Marina</option>';
+            Nome_options_str  += '<option value="Pozzo Punico">Pozzo Punico</option>';
+            Nome_options_str  += '<option value="Real Fonderia">Real Fonderia</option>';
+            Nome_options_str  += '<option value="San Biagio - Ufficio Contratti / Palazzo Cupani">San Biagio - Ufficio Contratti / Palazzo Cupani</option>';
+            Nome_options_str  += '<option value="Santa Maria La Nova">Santa Maria La Nova</option>';
+            Nome_options_str  += '<option value="Scultura Superba Aquila coronata">Scultura Superba Aquila coronata</option>';
+            Nome_options_str  += '<option value="Scuola Ugdulena">Scuola Ugdulena</option>';
+            Nome_options_str  += '<option value="Serra Liberty Giardino Inglese">Serra Liberty Giardino Inglese</option>';
+            Nome_options_str  += '<option value="Settore Attività Sociali - affidamento famiglie">Settore Attività Sociali - affidamento famiglie</option>';
+            Nome_options_str  += '<option value="Statua Equestre di Vittorio Emanuele II">Statua Equestre di Vittorio Emanuele II</option>';
+            Nome_options_str  += '<option value="Statua di Santa Rosalia">Statua di Santa Rosalia</option>';
+            Nome_options_str  += '<option value="Teatro Garibaldi">Teatro Garibaldi</option>';
+            Nome_options_str  += '<option value="Teatro Montevergini ex Chiesa">Teatro Montevergini ex Chiesa</option>';
+            Nome_options_str  += '<option value="Torre Ingastone">Torre Ingastone</option>';
+            Nome_options_str  += '<option value="Torre d&apos; acqua delle Sette Fate">Torre d&apos; acqua delle Sette Fate</option>';
+            Nome_options_str  += '<option value="Torre dell&apos; Orologio">Torre dell&apos; Orologio</option>';
+            Nome_options_str  += '<option value="Torre dell&apos;acqua">Torre dell&apos;acqua</option>';
+            Nome_options_str  += '<option value="Torre dell&apos;acqua Sacra Famiglia ( Cappuccinelle )">Torre dell&apos;acqua Sacra Famiglia ( Cappuccinelle )</option>';
+            Nome_options_str  += '<option value="Uffici Protezione Civile">Uffici Protezione Civile</option>';
+            Nome_options_str  += '<option value="Vespasiano">Vespasiano</option>';
+            Nome_options_str  += '<option value="Via Mongitore 1- 3">Via Mongitore 1- 3</option>';
+            Nome_options_str  += '<option value="Villa Bonanno">Villa Bonanno</option>';
+            Nome_options_str  += '<option value="Villa Giulia">Villa Giulia</option>';
+            Nome_options_str  += '<option value="Villa Marraffa">Villa Marraffa</option>';
+            Nome_options_str  += '<option value="Villa Pantelleria">Villa Pantelleria</option>';
+            Nome_options_str  += '<option value="Villa Rossi">Villa Rossi</option>';
+            Nome_options_str  += '<option value="Villa Savagnone">Villa Savagnone</option>';
+            Nome_options_str  += '<option value="Villa Spina">Villa Spina</option>';
+            Nome_options_str  += '<option value="Villa Trabia">Villa Trabia</option>';
+            Nome_options_str  += '<option value="edificio minore di villa Sperlinga a piazza Unità d&apos;Italia (URP)">edificio minore di villa Sperlinga a piazza Unità d&apos;Italia (URP)</option>';
+            Nome_options_str  += '<option value="ex Convento di S. Maria in Valverde">ex Convento di S. Maria in Valverde</option>';
+            sel_Nome.innerHTML = Nome_options_str;
+            div_Nome.appendChild(sel_Nome);
+            var lab_Nome = document.createElement('div');
+            lab_Nome.innerHTML = 'Nome';
+            lab_Nome.className = 'filterlabel';
+            div_Nome.appendChild(lab_Nome);
+            var reset_Nome = document.createElement('div');
+            reset_Nome.innerHTML = 'Cancella filtro';
+            reset_Nome.className = 'filterlabel';
+            reset_Nome.onclick = function() {
+                var options = document.getElementById("sel_Nome").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_Nome.appendChild(reset_Nome);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_UPL_nome = document.createElement('div');
+            div_UPL_nome.id = "div_UPL_nome";
+            div_UPL_nome.className= "filterselect";
+            document.getElementById("menu").appendChild(div_UPL_nome);
+            sel_UPL_nome = document.createElement('select');
+            sel_UPL_nome.multiple = true;
+            sel_UPL_nome.size = 9;
+            sel_UPL_nome.id = "sel_UPL_nome";
+            var UPL_nome_options_str = "<option value='' unselected></option>";
+            sel_UPL_nome.onchange = function(){filterFunc()};
+            UPL_nome_options_str  += '<option value="Altarello - Tasca Lanza">Altarello - Tasca Lanza</option>';
+            UPL_nome_options_str  += '<option value="Arenella">Arenella</option>';
+            UPL_nome_options_str  += '<option value="Boccadifalco - Baida">Boccadifalco - Baida</option>';
+            UPL_nome_options_str  += '<option value="Borgo Vecchio - Principe Scordia">Borgo Vecchio - Principe Scordia</option>';
+            UPL_nome_options_str  += '<option value="Brancaccio Conte Federico">Brancaccio Conte Federico</option>';
+            UPL_nome_options_str  += '<option value="Cantieri">Cantieri</option>';
+            UPL_nome_options_str  += '<option value="Castellammare o Loggia">Castellammare o Loggia</option>';
+            UPL_nome_options_str  += '<option value="Chiavelli - S.Maria di Gesù">Chiavelli - S.Maria di Gesù</option>';
+            UPL_nome_options_str  += '<option value="Corso dei Mille - S.Erasmo">Corso dei Mille - S.Erasmo</option>';
+            UPL_nome_options_str  += '<option value="Croci - Ruggero Settimo">Croci - Ruggero Settimo</option>';
+            UPL_nome_options_str  += '<option value="Cuba - Calatafimi">Cuba - Calatafimi</option>';
+            UPL_nome_options_str  += '<option value="Falsomiele Borgo Ulivia">Falsomiele Borgo Ulivia</option>';
+            UPL_nome_options_str  += '<option value="Marchese di Villabianca - Sampolo">Marchese di Villabianca - Sampolo</option>';
+            UPL_nome_options_str  += '<option value="Mezzomonreale">Mezzomonreale</option>';
+            UPL_nome_options_str  += '<option value="Monte di Pietà  o Seralcadi">Monte di Pietà  o Seralcadi</option>';
+            UPL_nome_options_str  += '<option value="Montepellegrino">Montepellegrino</option>';
+            UPL_nome_options_str  += '<option value="Notarbartolo - Giardino Inglese">Notarbartolo - Giardino Inglese</option>';
+            UPL_nome_options_str  += '<option value="Palazzo Reale o Albergaria">Palazzo Reale o Albergaria</option>';
+            UPL_nome_options_str  += '<option value="Pallavicino">Pallavicino</option>';
+            UPL_nome_options_str  += '<option value="Patti - Villaggio Ruffini">Patti - Villaggio Ruffini</option>';
+            UPL_nome_options_str  += '<option value="Resuttana">Resuttana</option>';
+            UPL_nome_options_str  += '<option value="Roccella Acqua dei Corsari">Roccella Acqua dei Corsari</option>';
+            UPL_nome_options_str  += '<option value="S.Francesco di Paola - Terrasanta">S.Francesco di Paola - Terrasanta</option>';
+            UPL_nome_options_str  += '<option value="San Giovanni Apostolo">San Giovanni Apostolo</option>';
+            UPL_nome_options_str  += '<option value="San Lorenzo">San Lorenzo</option>';
+            UPL_nome_options_str  += '<option value="Settecannoli">Settecannoli</option>';
+            UPL_nome_options_str  += '<option value="Tommaso Natale - Sant&apos;Ambrogio - Cardillo">Tommaso Natale - Sant&apos;Ambrogio - Cardillo</option>';
+            UPL_nome_options_str  += '<option value="Tribunali o Kalsa">Tribunali o Kalsa</option>';
+            UPL_nome_options_str  += '<option value="Villa Sperlinga">Villa Sperlinga</option>';
+            UPL_nome_options_str  += '<option value="Vittorio Veneto">Vittorio Veneto</option>';
+            UPL_nome_options_str  += '<option value="Zisa - Ingastone">Zisa - Ingastone</option>';
+            sel_UPL_nome.innerHTML = UPL_nome_options_str;
+            div_UPL_nome.appendChild(sel_UPL_nome);
+            var lab_UPL_nome = document.createElement('div');
+            lab_UPL_nome.innerHTML = 'Unità di primo livello';
+            lab_UPL_nome.className = 'filterlabel';
+            div_UPL_nome.appendChild(lab_UPL_nome);
+            var reset_UPL_nome = document.createElement('div');
+            reset_UPL_nome.innerHTML = 'Cancella filtro';
+            reset_UPL_nome.className = 'filterlabel';
+            reset_UPL_nome.onclick = function() {
+                var options = document.getElementById("sel_UPL_nome").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_UPL_nome.appendChild(reset_UPL_nome);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_Quartiere = document.createElement('div');
+            div_Quartiere.id = "div_Quartiere";
+            div_Quartiere.className= "filterselect";
+            document.getElementById("menu").appendChild(div_Quartiere);
+            sel_Quartiere = document.createElement('select');
+            sel_Quartiere.multiple = true;
+            sel_Quartiere.size = 10;
+            sel_Quartiere.id = "sel_Quartiere";
+            var Quartiere_options_str = "<option value='' unselected></option>";
+            sel_Quartiere.onchange = function(){filterFunc()};
+            Quartiere_options_str  += '<option value="Altarello">Altarello</option>';
+            Quartiere_options_str  += '<option value="Arenella - Vergine Maria">Arenella - Vergine Maria</option>';
+            Quartiere_options_str  += '<option value="Boccadifalco">Boccadifalco</option>';
+            Quartiere_options_str  += '<option value="Brancaccio - Ciaculli">Brancaccio - Ciaculli</option>';
+            Quartiere_options_str  += '<option value="Cruillas - S.Giovanni Apostolo">Cruillas - S.Giovanni Apostolo</option>';
+            Quartiere_options_str  += '<option value="Cuba - Calatafimi">Cuba - Calatafimi</option>';
+            Quartiere_options_str  += '<option value="Libertà">Libertà</option>';
+            Quartiere_options_str  += '<option value="Mezzomonreale - Villa Tasca">Mezzomonreale - Villa Tasca</option>';
+            Quartiere_options_str  += '<option value="Montepellegrino">Montepellegrino</option>';
+            Quartiere_options_str  += '<option value="Oreto - Stazione">Oreto - Stazione</option>';
+            Quartiere_options_str  += '<option value="Palazzo Reale - Monte di Pietà">Palazzo Reale - Monte di Pietà</option>';
+            Quartiere_options_str  += '<option value="Pallavicino">Pallavicino</option>';
+            Quartiere_options_str  += '<option value="Politeama">Politeama</option>';
+            Quartiere_options_str  += '<option value="Resuttana - San Lorenzo">Resuttana - San Lorenzo</option>';
+            Quartiere_options_str  += '<option value="Settecannoli">Settecannoli</option>';
+            Quartiere_options_str  += '<option value="Tommaso Natale - Sferracavallo">Tommaso Natale - Sferracavallo</option>';
+            Quartiere_options_str  += '<option value="Tribunali-Castellammare">Tribunali-Castellammare</option>';
+            Quartiere_options_str  += '<option value="Villagrazia - Falsomiele">Villagrazia - Falsomiele</option>';
+            Quartiere_options_str  += '<option value="Zisa">Zisa</option>';
+            sel_Quartiere.innerHTML = Quartiere_options_str;
+            div_Quartiere.appendChild(sel_Quartiere);
+            var lab_Quartiere = document.createElement('div');
+            lab_Quartiere.innerHTML = 'Quartiere';
+            lab_Quartiere.className = 'filterlabel';
+            div_Quartiere.appendChild(lab_Quartiere);
+            var reset_Quartiere = document.createElement('div');
+            reset_Quartiere.innerHTML = 'Cancella filtro';
+            reset_Quartiere.className = 'filterlabel';
+            reset_Quartiere.onclick = function() {
+                var options = document.getElementById("sel_Quartiere").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_Quartiere.appendChild(reset_Quartiere);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_Circoscrizione = document.createElement('div');
+            div_Circoscrizione.id = "div_Circoscrizione";
+            div_Circoscrizione.className= "filterselect";
+            document.getElementById("menu").appendChild(div_Circoscrizione);
+            sel_Circoscrizione = document.createElement('select');
+            sel_Circoscrizione.multiple = true;
+            sel_Circoscrizione.size = 8;
+            sel_Circoscrizione.id = "sel_Circoscrizione";
+            var Circoscrizione_options_str = "<option value='' unselected></option>";
+            sel_Circoscrizione.onchange = function(){filterFunc()};
+            Circoscrizione_options_str  += '<option value="I">I</option>';
+            Circoscrizione_options_str  += '<option value="II">II</option>';
+            Circoscrizione_options_str  += '<option value="III">III</option>';
+            Circoscrizione_options_str  += '<option value="IV">IV</option>';
+            Circoscrizione_options_str  += '<option value="V">V</option>';
+            Circoscrizione_options_str  += '<option value="VI">VI</option>';
+            Circoscrizione_options_str  += '<option value="VII">VII</option>';
+            Circoscrizione_options_str  += '<option value="VIII">VIII</option>';
+            sel_Circoscrizione.innerHTML = Circoscrizione_options_str;
+            div_Circoscrizione.appendChild(sel_Circoscrizione);
+            var lab_Circoscrizione = document.createElement('div');
+            lab_Circoscrizione.innerHTML = 'Circoscrizione';
+            lab_Circoscrizione.className = 'filterlabel';
+            div_Circoscrizione.appendChild(lab_Circoscrizione);
+            var reset_Circoscrizione = document.createElement('div');
+            reset_Circoscrizione.innerHTML = 'Cancella filtro';
+            reset_Circoscrizione.className = 'filterlabel';
+            reset_Circoscrizione.onclick = function() {
+                var options = document.getElementById("sel_Circoscrizione").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_Circoscrizione.appendChild(reset_Circoscrizione);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+				
+				
+						<!--.zoomControl etichetta off") -->
+		map.on("zoomend", function(){
+
+            if (map.hasLayer(layer_BeniMonumentali_gbBase_Dati_3)) {
+                if (map.getZoom() <= 20 && map.getZoom() >= 16) {
+                    layer_BeniMonumentali_gbBase_Dati_3.eachLayer(function (layer) {
+                        layer.openTooltip();
+                    });
+                } else {
+                    layer_BeniMonumentali_gbBase_Dati_3.eachLayer(function (layer) {
+                        layer.closeTooltip();
+                    });
+                }
+            }
+           });
+		  <!-- fine zoomControl etichetta off ) -->
+						
+				<!--.zoomControl etichetta  on) -->		
+		var i = 0;
+        layer_BeniMonumentali_gbBase_Dati_3.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['ID'] !== null?String('<div style="color: #4E4B4B; font: bold 10px Arial; background-color: #ede9e9; border-radius: 2px;  -moz-border-radius: 2px;  -webkit-border-radius: 2px; box-shadow: 0 1px 5px rgba(0,0,0,0.6); padding: 2px 2px; ">' + layer.feature.properties['ID']) + '</div>':''), {permanent: true, offset: [-0, -10], className: 'css_interventi_poli_wgs84_1'});
+            labels.push(layer);
+            totalMarkers += 1;
+              layer.added = true;
+              addLabel(layer, i);
+              i++;
+        });
+
+            if (map.hasLayer(layer_BeniMonumentali_gbBase_Dati_3)) {
+                if (map.getZoom() <= 20 && map.getZoom() >= 16) {
+                    layer_BeniMonumentali_gbBase_Dati_3.eachLayer(function (layer) {
+                        layer.openTooltip();
+                    });
+                } else {
+                    layer_BeniMonumentali_gbBase_Dati_3.eachLayer(function (layer) {
+                        layer.closeTooltip();
+                    });
+                }
+              }
+        resetLabels([layer_BeniMonumentali_gbBase_Dati_3]);
+        map.on("zoomend", function(){
+            resetLabels([layer_BeniMonumentali_gbBase_Dati_3]);
+        });
+        map.on("layeradd", function(){
+            resetLabels([layer_BeniMonumentali_gbBase_Dati_3]);
+        });
+        map.on("layerremove", function(){
+            resetLabels([layer_BeniMonumentali_gbBase_Dati_3]);
+        });				
+				<!-- fine.zoomControl etichetta  on) -->		
+
+        </script>
+
+		
+    </body>
+</html>
